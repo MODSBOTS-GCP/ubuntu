@@ -1,4 +1,4 @@
-FROM ubuntu:20.04
+FROM ubuntu:18.04
 
 RUN apt-get update && apt-get install -y autoconf automake curl cmake git libtool make \
     && git clone --depth=1 https://github.com/tsl0922/ttyd.git /ttyd \
