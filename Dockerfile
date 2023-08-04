@@ -1,23 +1,14 @@
-#FROM kalilinux/kali-rolling
-FROM ubuntu:14.04
-#ENV TTY_VER 1.6.1
-#ENV USER kali
-#ENV PASSWORD kali
+FROM ubuntu:18.04
+RUN apt-get update && apt-get install -y autoconf automake curl cmake git libtool make \
+    && git clone --depth=1 https://github.com/tsl0922/ttyd.git /ttyd \
+    && cd /ttyd && env BUILD_TARGET=x86_64 ./scripts/cross-build.sh
 
-RUN apt-get -y update && \
-    apt-get install -y curl && \
-    curl -sLk https://github.com/tsl0922/ttyd/releases/download/1.6.1/ttyd_linux.x86_64 -o ttyd_linux && \
-    chmod +x ttyd_linux && \
-    cp ttyd_linux /usr/local/bin/
+FROM alpine
+COPY --from=0 /ttyd/build/ttyd /usr/bin/ttyd
+RUN apk add --no-cache bash tini
 
-RUN echo 'Installing additional packages...' && \
-	export DEBIAN_FRONTEND=noninteractive && \
-	apt-get update && \
-	apt-get install \
-	sudo \
-	-y --show-progress 
+EXPOSE 8080
+WORKDIR /root
 
-COPY run_ttyd.sh /run_ttyd.sh
-RUN chmod 744 /run_ttyd.sh
-
-CMD ["/bin/bash","/run_ttyd.sh"]
+ENTRYPOINT ["/sbin/tini", "--"]
+CMD ["ttyd", "bash"]
