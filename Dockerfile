@@ -11,4 +11,4 @@ EXPOSE 8080
 WORKDIR /root
 
 ENTRYPOINT ["/sbin/tini", "--"]
-CMD ["ttyd", "bash"]
+CMD ["ttyd", "-p", "8080" "-c", "kali:kali", "bash"]
