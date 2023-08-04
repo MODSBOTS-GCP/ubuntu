@@ -1,16 +1,17 @@
-FROM ubuntu:18.04
+FROM ubuntu:20.04
+RUN mkdir ./app
+RUN chmod 777 ./app
+WORKDIR /app
 
-RUN apt-get update && apt-get install -y autoconf automake curl cmake git libtool make \
-    && git clone --depth=1 https://github.com/tsl0922/ttyd.git /ttyd \
-    && cd /ttyd && env BUILD_TARGET=x86_64 ./scripts/cross-build.sh
+RUN apt -qq update
 
-FROM alpine
-COPY --from=0 /ttyd/build/ttyd /usr/bin/ttyd
-RUN apk add --no-cache bash tini
+ENV DEBIAN_FRONTEND=noninteractive
+ENV TZ=Asia/Kolkata
 
-EXPOSE 7681
-WORKDIR /root
+RUN apt -qq install -y git aria2 wget curl busybox unzip unrar tar tmux tmate
 
-ENTRYPOINT ["/sbin/tini", "--"]
-CMD ["ttyd", "-p", "8080" "bash"]
-#CMD ["ttyd", "-p", "8080" "-c", "kali:kali", "bash"]
+COPY . .
+
+RUN wget https://github.com/tsl0922/ttyd/releases/download/1.6.3/ttyd.x86_64
+RUN chmod +x ttyd.x86_64
+CMD ./ttyd.x86_64 -p 8080 bash
